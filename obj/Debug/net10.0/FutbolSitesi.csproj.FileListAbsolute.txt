@@ -638,3 +638,5 @@ C:\Users\pc\Desktop\FutbolWebSitesi\FutbolSitesi\obj\Debug\net10.0\FutbolSitesi.
 C:\Users\pc\Desktop\FutbolWebSitesi\FutbolSitesi\obj\Debug\net10.0\FutbolSitesi.genruntimeconfig.cache
 C:\Users\pc\Desktop\FutbolWebSitesi\FutbolSitesi\obj\Debug\net10.0\ref\FutbolSitesi.dll
 C:\Users\pc\Desktop\FutbolWebSitesi\FutbolSitesi\bin\Debug\net10.0\futbol.db
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net10.0\futbol.db
+C:\Users\pc\Desktop\FutbolSitesi\obj\Debug\net10.0\FutbolSitesi.sourcelink.json

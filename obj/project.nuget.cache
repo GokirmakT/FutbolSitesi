@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "m63Drp8mduM=",
+  "dgSpecHash": "kmiMOqfGDJM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\pc\\Desktop\\FutbolWebSitesi\\FutbolSitesi\\FutbolSitesi.csproj",
+  "projectFilePath": "C:\\Users\\pc\\Desktop\\FutbolSitesi\\FutbolSitesi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\pc\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.0\\microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",

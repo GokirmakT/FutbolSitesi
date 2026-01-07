@@ -3050,11 +3050,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pc\\Desktop\\FutbolWebSitesi\\FutbolSitesi\\FutbolSitesi.csproj",
+      "projectUniqueName": "C:\\Users\\pc\\Desktop\\FutbolSitesi\\FutbolSitesi.csproj",
       "projectName": "FutbolSitesi",
-      "projectPath": "C:\\Users\\pc\\Desktop\\FutbolWebSitesi\\FutbolSitesi\\FutbolSitesi.csproj",
+      "projectPath": "C:\\Users\\pc\\Desktop\\FutbolSitesi\\FutbolSitesi.csproj",
       "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pc\\Desktop\\FutbolWebSitesi\\FutbolSitesi\\obj\\",
+      "outputPath": "C:\\Users\\pc\\Desktop\\FutbolSitesi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config"
