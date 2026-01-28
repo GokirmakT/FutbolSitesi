@@ -1,8 +1,20 @@
 using FutbolSitesi.Data;
-using Microsoft.EntityFrameworkCore;
 using FutbolSitesi.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = Environments.Production   // 🔴 KRİTİK
+});
+
+/* 🔴 DOSYA IZLEMEYI KAPAT */
+builder.Configuration.AddJsonFile(
+    "appsettings.json",
+    optional: false,
+    reloadOnChange: false
+);
 
 /* 🌍 CORS */
 builder.Services.AddCors(o =>
@@ -15,37 +27,39 @@ builder.Services.AddCors(o =>
     });
 });
 
-/* 🚪 PORT OKU */
+/* 🚪 PORT */
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://*:{port}");
 
 /* 🗄️ SQLITE */
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite($"Data Source=/app/futbol.db"));
+    options.UseSqlite("Data Source=/app/data/futbol.db")
+);
 
+/* 🎮 CONTROLLERS */
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+    .AddJsonOptions(o =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy =
+        o.JsonSerializerOptions.PropertyNamingPolicy =
             System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
 var app = builder.Build();
 
-/* 🔐 HTTPS SADECE LOCAL */
-if (!app.Environment.IsProduction())
-{
-    app.UseHttpsRedirection();
-}
+/* ❌ HTTPS REDIRECTION YOK (Render zaten proxy) */
+// app.UseHttpsRedirection();
 
 app.UseCors("all");
 
 app.MapControllers();
 
-/* 🌱 SEED */
+app.MapGet("/api/ping", () => Results.Ok("pong"));
+
+/* 🌱 SEED (sadece ilk kez) */
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
 
     if (!db.Matches.Any())
     {

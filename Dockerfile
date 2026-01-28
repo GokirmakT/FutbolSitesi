@@ -1,32 +1,34 @@
-# 1) BUILD STAGE
+# =========================
+# 1️⃣ BUILD STAGE
+# =========================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# csproj’u kopyala ve paketleri restore et
 COPY FutbolSitesi.csproj .
 RUN dotnet restore
 
-# tüm kaynak kodu kopyala
 COPY . .
-
-# projeyi publish et
 RUN dotnet publish -c Release -o /app/publish
 
 
-# 2) RUNTIME STAGE
+# =========================
+# 2️⃣ RUNTIME STAGE
+# =========================
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# publish edilen dosyaları taşı
+# 🔴 PRODUCTION ENV
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_ENVIRONMENT=Production
+
+# publish edilen dosyalar
 COPY --from=build /app/publish .
 
-# futbol.db dosyasının runtime içinde olduğundan emin ol
-COPY futbol.db /app/futbol.db
+# 🔴 SQLITE DATA KLASÖRÜ (VOLUME BURAYA)
+RUN mkdir -p /app/data
 
-# Render PORT’unu kullan
+# Render PORT
 ENV PORT=5000
-
-# uygulamayı 5000’e bind et
 EXPOSE 5000
 
 ENTRYPOINT ["dotnet", "FutbolSitesi.dll"]
