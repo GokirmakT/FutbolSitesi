@@ -1,20 +1,7 @@
 using FutbolSitesi.Data;
-using FutbolSitesi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    Args = args,
-    EnvironmentName = Environments.Production   // 🔴 KRİTİK
-});
-
-/* 🔴 DOSYA IZLEMEYI KAPAT */
-builder.Configuration.AddJsonFile(
-    "appsettings.json",
-    optional: false,
-    reloadOnChange: false
-);
+var builder = WebApplication.CreateBuilder(args);
 
 /* 🌍 CORS */
 builder.Services.AddCors(o =>
@@ -31,9 +18,26 @@ builder.Services.AddCors(o =>
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://*:{port}");
 
-/* 🗄️ SQLITE */
+/* 🗄️ SQLITE – MEVCUT futbol.db */
+var isDocker =
+    Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+string dbPath;
+
+if (isDocker)
+{
+    Directory.CreateDirectory("/app/data");
+    dbPath = "/app/data/futbol.db";
+}
+else
+{
+    dbPath = Path.Combine(AppContext.BaseDirectory, "futbol.db");
+}
+
+Console.WriteLine("USING DB: " + dbPath);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=/app/data/futbol.db")
+    options.UseSqlite($"Data Source={dbPath}")
 );
 
 /* 🎮 CONTROLLERS */
@@ -46,7 +50,7 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-/* ❌ HTTPS REDIRECTION YOK (Render zaten proxy) */
+/* ❌ HTTPS REDIRECTION YOK */
 // app.UseHttpsRedirection();
 
 app.UseCors("all");
@@ -54,35 +58,5 @@ app.UseCors("all");
 app.MapControllers();
 
 app.MapGet("/api/ping", () => Results.Ok("pong"));
-
-/* 🌱 SEED (sadece ilk kez) */
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
-
-    if (!db.Matches.Any())
-    {
-        db.Matches.Add(new Match
-        {
-            Season = "2024-25",
-            League = "SuperLig",
-            Week = 1,
-            HomeTeam = "Galatasaray",
-            AwayTeam = "Fenerbahce",
-            Winner = "Home",
-            GoalHome = 2,
-            GoalAway = 1,
-            CornerHome = 5,
-            CornerAway = 3,
-            YellowHome = 1,
-            YellowAway = 2,
-            RedHome = 0,
-            RedAway = 0
-        });
-
-        db.SaveChanges();
-    }
-}
 
 app.Run();
