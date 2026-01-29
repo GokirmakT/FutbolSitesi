@@ -24,6 +24,8 @@ ENV DOTNET_ENVIRONMENT=Production
 # publish edilen dosyalar
 COPY --from=build /app/publish .
 
+COPY futbol.db /app/data/futbol.db
+
 # 🔴 SQLITE DATA KLASÖRÜ (VOLUME BURAYA)
 RUN mkdir -p /app/data
 
