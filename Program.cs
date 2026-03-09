@@ -8,7 +8,7 @@ using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/* 🔐 ENV (.env) YÜKLE */
+/* 🔐 ENV (.env) YÜKLEME */
 Env.Load();
 
 /* 🌍 CORS */
@@ -26,15 +26,20 @@ builder.Services.AddCors(o =>
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://*:{port}");
 
-/* 🗄️ DATABASE PATH */
-string dbPath = Environment.GetEnvironmentVariable("DB_PATH");
+/* 🗄️ SQLITE – MEVCUT futbol.db */
+var isDocker =
+    Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
-if (string.IsNullOrEmpty(dbPath))
+string dbPath;
+
+if (isDocker)
 {
-    // Local geliştirme
-    var dataDir = Path.Combine(AppContext.BaseDirectory, "data");
-    Directory.CreateDirectory(dataDir);
-    dbPath = Path.Combine(dataDir, "futbol.db");
+    Directory.CreateDirectory("/app/data");
+    dbPath = "/app/data/futbol.db";
+}
+else
+{
+    dbPath = Path.Combine(AppContext.BaseDirectory, "futbol.db");
 }
 
 Console.WriteLine("USING DB: " + dbPath);
@@ -46,7 +51,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 /* 🔐 JWT AUTH */
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
                 ?? builder.Configuration["Jwt:Key"]
-                ?? throw new InvalidOperationException("JWT secret not configured.");
+                ?? throw new InvalidOperationException("JWT secret not configured. Set JWT_SECRET in .env or Jwt:Key in appsettings.");
 
 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
@@ -78,7 +83,10 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-/* 🗄️ USERS TABLOSU YOKSA OLUŞTUR */
+/* ❌ HTTPS REDIRECTION YOK */
+// app.UseHttpsRedirection();
+
+/* 🗄️ USERS TABLOSU YOKSA OLUŞTUR (VERİ KAYBI YOK) */
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
