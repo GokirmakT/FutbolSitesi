@@ -128,3 +128,14 @@ C:\Users\pc\Desktop\FutbolSitesi\obj\Debug\net8.0\refint\FutbolSitesi.dll
 C:\Users\pc\Desktop\FutbolSitesi\obj\Debug\net8.0\FutbolSitesi.pdb
 C:\Users\pc\Desktop\FutbolSitesi\obj\Debug\net8.0\FutbolSitesi.genruntimeconfig.cache
 C:\Users\pc\Desktop\FutbolSitesi\obj\Debug\net8.0\ref\FutbolSitesi.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\BCrypt.Net-Next.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\DotNetEnv.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\Sprache.dll
+C:\Users\pc\Desktop\FutbolSitesi\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
