@@ -172,6 +172,25 @@ namespace FutbolSitesi.Controllers
 
             return Ok(response);
         }
+
+        // GET /api/auth/users
+        [HttpGet("users")]
+        [Authorize]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _db.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.CreatedAt,
+                    u.LastLogin
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
     }
 }
 
