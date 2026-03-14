@@ -61,6 +61,7 @@ INSERT INTO Matches VALUES (
 
 /* ----------------- LIG LISTESI ----------------- */
 const leagues = [
+    /*
   { code: "eng.1", name: "Premier League" },
   { code: "eng.2", name: "EFL Championship" },
   { code: "tur.1", name: "Super Lig" },
@@ -75,6 +76,10 @@ const leagues = [
   { code: "uefa.europa", name: "UEFA Europa League" },
   { code: "uefa.europa.conf", name: "UEFA Europa Conference League" },
   { code: "ksa.1", name: "Saudi Pro League" }
+   */
+
+  { code: "tur.1", name: "Super Lig" }
+
 ];
 
 /* ----------------- UTILS ----------------- */

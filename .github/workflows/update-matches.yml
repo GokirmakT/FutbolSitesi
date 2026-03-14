@@ -1,5 +1,8 @@
 name: Update Matches DB
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: '0 0 * * *' # Her gün saat 03:00 UTC
