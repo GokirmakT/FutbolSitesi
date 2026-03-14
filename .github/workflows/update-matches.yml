@@ -2,7 +2,7 @@ name: Update Matches DB
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Her gün saat 03:00 UTC
+    - cron: '0 0 * * *' # Her gün saat 03:00 UTC
   workflow_dispatch: # İstersen manuel çalıştırma seçeneği
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add FutbolSitesi/futbol.db
+          git add futbol.db
           git commit -m "Update futbol.db [Automated]" || echo "No changes to commit"
           git push
         env:
