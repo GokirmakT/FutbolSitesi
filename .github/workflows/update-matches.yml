@@ -1,0 +1,35 @@
+name: Update Matches DB
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Her gün saat 03:00 UTC
+  workflow_dispatch: # İstersen manuel çalıştırma seçeneği
+
+jobs:
+  update-db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' # veya senin kullandığın sürüm
+
+      - name: Install dependencies
+        run: npm install axios better-sqlite3
+
+      - name: Run matches script
+        run: node scripts/Matches.js
+
+      - name: Commit and push DB changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add FutbolSitesi/futbol.db
+          git commit -m "Update futbol.db [Automated]" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
