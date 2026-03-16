@@ -117,4 +117,6 @@ app.MapControllers();
 
 app.MapGet("/api/ping", () => Results.Ok("pong"));
 
+app.MapGet("/health", () => Results.Ok("ok"));
+
 app.Run();
