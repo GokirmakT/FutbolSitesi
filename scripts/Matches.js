@@ -195,7 +195,7 @@ function parseMatch(event, leagueName, matchId) {
 /* ----------------- RUN ----------------- */
 async function run() {
   const seasonStart = new Date("2025-08-08");
-  const seasonEnd = new Date("2026-06-01");
+  const seasonEnd = new Date("2026-08-01");
   let allMatches = [];
   let matchId = 1;
 
