@@ -75,7 +75,8 @@ const leagues = [
   { code: "uefa.champions", name: "UEFA Champions League" },
   { code: "uefa.europa", name: "UEFA Europa League" },
   { code: "uefa.europa.conf", name: "UEFA Europa Conference League" },
-  { code: "ksa.1", name: "Saudi Pro League" }
+  { code: "ksa.1", name: "Saudi Pro League" },
+  { code: "fifa.world", name: "FIFA World Cup" }
 
 
 ];
