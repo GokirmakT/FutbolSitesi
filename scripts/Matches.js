@@ -1,10 +1,11 @@
 import axios from "axios";
 import Database from "better-sqlite3";
+import path from "path";
+import { fileURLToPath } from "url";
 
-/* ----------------- SQLITE ----------------- */
-const db = new Database("../FutbolSitesi/futbol.db");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const db = new Database(path.join(__dirname, "..", "futbol.db"));
 
-// tabloyu sadece oluştur (asla silme)
 db.exec(`
 CREATE TABLE IF NOT EXISTS Matches (
 Id INTEGER PRIMARY KEY,
@@ -37,24 +38,32 @@ AwayGoalsMinutes TEXT
 )
 `);
 
-/* ----------------- DB CHECK ----------------- */
+db.exec(`
+CREATE UNIQUE INDEX IF NOT EXISTS idx_matches_natural_key
+ON Matches (Season, League, HomeTeam, AwayTeam, Date)
+`);
+
 const row = db.prepare(`SELECT COUNT(*) as count FROM Matches`).get();
 const hasData = row.count > 0;
 
-/* ----------------- SEASON RANGE ----------------- */
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
 }
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
 const seasonStart = hasData
-  ? addDays(new Date(), -7)
+  ? addDays(today, -7)
   : new Date("2025-08-08");
 
-const seasonEnd = new Date("2026-09-01"); // 🔥 SABİT
+// Incremental modda sadece son hafta + yakın gelecek; ilk yüklemede tüm sezon
+const seasonEnd = hasData
+  ? addDays(today, 14)
+  : new Date("2026-09-01");
 
-/* ----------------- INSERT ----------------- */
 const insertMatch = db.prepare(`
 INSERT OR REPLACE INTO Matches VALUES (
 @Id,@Season,@League,@Week,@Date,@Time,
@@ -71,7 +80,80 @@ INSERT OR REPLACE INTO Matches VALUES (
 )
 `);
 
-/* ----------------- LIG LISTESI ----------------- */
+const findByNaturalKey = db.prepare(`
+SELECT Id FROM Matches
+WHERE Season = @Season
+  AND League = @League
+  AND HomeTeam = @HomeTeam
+  AND AwayTeam = @AwayTeam
+  AND Date = @Date
+  AND Id != @Id
+`);
+
+const findStaleTbdFixtures = db.prepare(`
+SELECT Id FROM Matches
+WHERE Season = @Season
+  AND League = @League
+  AND HomeTeam = @HomeTeam
+  AND AwayTeam = @AwayTeam
+  AND Id != @Id
+  AND Date != @Date
+  AND Winner = 'TBD'
+`);
+
+const deleteById = db.prepare(`DELETE FROM Matches WHERE Id = ?`);
+
+function upsertMatch(match) {
+  for (const stale of findStaleTbdFixtures.all(match)) {
+    deleteById.run(stale.Id);
+  }
+
+  const sameFixture = findByNaturalKey.get(match);
+  if (sameFixture) {
+    deleteById.run(sameFixture.Id);
+  }
+
+  insertMatch.run(match);
+}
+
+function cleanupExistingDuplicates() {
+  const removedNatural = db.prepare(`
+    DELETE FROM Matches
+    WHERE Id IN (
+      SELECT m1.Id
+      FROM Matches m1
+      JOIN Matches m2
+        ON m1.Season = m2.Season
+       AND m1.League = m2.League
+       AND m1.HomeTeam = m2.HomeTeam
+       AND m1.AwayTeam = m2.AwayTeam
+       AND m1.Date = m2.Date
+       AND m1.Id < m2.Id
+    )
+  `).run().changes;
+
+  const removedStale = db.prepare(`
+    DELETE FROM Matches
+    WHERE Id IN (
+      SELECT m1.Id
+      FROM Matches m1
+      JOIN Matches m2
+        ON m1.Season = m2.Season
+       AND m1.League = m2.League
+       AND m1.HomeTeam = m2.HomeTeam
+       AND m1.AwayTeam = m2.AwayTeam
+       AND m1.Id != m2.Id
+       AND m1.Date != m2.Date
+       AND m1.Winner = 'TBD'
+       AND m2.Winner != 'TBD'
+    )
+  `).run().changes;
+
+  if (removedNatural + removedStale > 0) {
+    console.log(`🧹 ${removedNatural + removedStale} duplicate kayıt temizlendi`);
+  }
+}
+
 const leagues = [
   { code: "eng.1", name: "Premier League" },
   { code: "eng.2", name: "EFL Championship" },
@@ -90,7 +172,6 @@ const leagues = [
   { code: "fifa.world", name: "FIFA World Cup" }
 ];
 
-/* ----------------- UTILS ----------------- */
 function formatDate(date) {
   return date.toISOString().slice(0, 10).replace(/-/g, "");
 }
@@ -101,14 +182,12 @@ function getWeekNumber(date) {
   return diff >= 0 ? Math.floor(diff / 7) + 1 : 0;
 }
 
-/* ----------------- FETCH ----------------- */
 async function fetchScoreboard(leagueCode, start, end) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/scoreboard?dates=${formatDate(start)}-${formatDate(end)}`;
   const { data } = await axios.get(url);
   return data.events || [];
 }
 
-/* ----------------- PARSE ----------------- */
 function parseMatch(event, leagueName) {
   const competition = event.competitions?.[0];
   if (!competition) return null;
@@ -218,14 +297,15 @@ function parseMatch(event, leagueName) {
   };
 }
 
-/* ----------------- RUN ----------------- */
 async function run() {
-  let allMatches = [];
+  cleanupExistingDuplicates();
+
+  const matchById = new Map();
 
   for (const league of leagues) {
     console.log(`⏳ ${league.name}`);
 
-    let cursor = seasonStart;
+    let cursor = new Date(seasonStart);
 
     while (cursor <= seasonEnd) {
       const rangeEnd = addDays(cursor, 6);
@@ -233,12 +313,12 @@ async function run() {
       const events = await fetchScoreboard(
         league.code,
         cursor,
-        rangeEnd
+        rangeEnd > seasonEnd ? seasonEnd : rangeEnd
       );
 
       for (const event of events) {
         const match = parseMatch(event, league.name);
-        if (match) allMatches.push(match);
+        if (match) matchById.set(match.Id, match);
       }
 
       cursor = addDays(rangeEnd, 1);
@@ -246,25 +326,13 @@ async function run() {
     }
   }
 
-  for (const m of allMatches) {
-    db.prepare(`
-      INSERT OR REPLACE INTO Matches VALUES (
-      @Id,@Season,@League,@Week,@Date,@Time,
-      @HomeTeam,@AwayTeam,@Winner,
-      @GoalHome,@GoalAway,
-      @CornerHome,@CornerAway,
-      @YellowHome,@YellowAway,
-      @RedHome,@RedAway,
-      @ShotsHome,@ShotsAway,
-      @ShotsOnTargetHome,@ShotsOnTargetAway,
-      @FoulsHome,@FoulsAway,
-      @PossessionHome,@PossessionAway,
-      @HomeGoalsMinutes,@AwayGoalsMinutes
-      )
-    `).run(m);
-  }
+  const upsertMany = db.transaction((matches) => {
+    for (const m of matches) upsertMatch(m);
+  });
 
-  console.log(`✅ ${allMatches.length} maç işlendi`);
+  upsertMany([...matchById.values()]);
+
+  console.log(`✅ ${matchById.size} maç işlendi (${hasData ? "incremental" : "full"} mod)`);
   db.close();
 }
 
