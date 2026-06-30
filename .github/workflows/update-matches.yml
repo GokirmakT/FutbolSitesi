@@ -5,28 +5,38 @@ permissions:
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Her gün saat 03:00 UTC
-  workflow_dispatch: # İstersen manuel çalıştırma seçeneği
+    - cron: '0 0 * * *' # her gün 00:00 UTC
+  workflow_dispatch:
 
 jobs:
   update-db:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Repo çek
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # 2. Node kur
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20' # veya senin kullandığın sürüm
+          node-version: 20
+          cache: 'npm'
 
+      # 3. Bağımlılıkları temiz kur (EN ÖNEMLİ KISIM)
       - name: Install dependencies
-        run: npm install axios better-sqlite3
+        run: npm ci
 
+      # 4. SQLite native modülünü Linux için garantiye al
+      - name: Rebuild native modules
+        run: npm rebuild better-sqlite3
+
+      # 5. Script çalıştır
       - name: Run matches script
         run: node scripts/Matches.js
 
+      # 6. DB değiştiyse commit et
       - name: Commit and push DB changes
         run: |
           git config user.name "github-actions"
@@ -34,5 +44,3 @@ jobs:
           git add futbol.db
           git commit -m "Update futbol.db [Automated]" || echo "No changes to commit"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
