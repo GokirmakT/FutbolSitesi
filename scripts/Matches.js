@@ -57,12 +57,12 @@ today.setHours(0, 0, 0, 0);
 
 const seasonStart = hasData
   ? addDays(today, -7)
-  : new Date("2025-08-08");
+  : new Date("2026-08-01");
 
 // Incremental modda sadece son hafta + yakın gelecek; ilk yüklemede tüm sezon
 const seasonEnd = hasData
   ? addDays(today, 14)
-  : new Date("2026-09-01");
+  : new Date("2027-09-01");
 
 const insertMatch = db.prepare(`
 INSERT OR REPLACE INTO Matches VALUES (
@@ -177,7 +177,7 @@ function formatDate(date) {
 }
 
 function getWeekNumber(date) {
-  const base = new Date("2025-08-08");
+  const base = new Date("2026-08-01");
   const diff = Math.floor((date - base) / (1000 * 60 * 60 * 24));
   return diff >= 0 ? Math.floor(diff / 7) + 1 : 0;
 }
@@ -253,7 +253,7 @@ function parseMatch(event, leagueName) {
 
   return {
     Id: Number(event.id),
-    Season: "2025-2026",
+    Season: "2026-2027",
     League: leagueName,
     Week: getWeekNumber(new Date(event.date)),
     Date: datePart,
