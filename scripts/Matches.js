@@ -45,6 +45,9 @@ ON Matches (Season, League, HomeTeam, AwayTeam, Date)
 
 const row = db.prepare(`SELECT COUNT(*) as count FROM Matches`).get();
 const hasData = row.count > 0;
+const existingLeagueNames = new Set(
+  db.prepare(`SELECT DISTINCT League FROM Matches`).all().map(r => r.League)
+);
 
 function addDays(date, days) {
   const d = new Date(date);
@@ -55,14 +58,15 @@ function addDays(date, days) {
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-const seasonStart = hasData
-  ? addDays(today, -7)
-  : new Date("2026-08-01");
+function getLeagueWindow(leagueName) {
+  const isNewLeague = !existingLeagueNames.has(leagueName);
 
-// Incremental modda sadece son hafta + yakın gelecek; ilk yüklemede tüm sezon
-const seasonEnd = hasData
-  ? addDays(today, 14)
-  : new Date("2027-09-01");
+  return {
+    start: isNewLeague ? new Date("2026-07-01") : addDays(today, -7),
+    end: isNewLeague ? new Date("2027-09-01") : addDays(today, 14),
+    isFullSeason: isNewLeague
+  };
+}
 
 const insertMatch = db.prepare(`
 INSERT OR REPLACE INTO Matches VALUES (
@@ -169,7 +173,10 @@ const leagues = [
   { code: "uefa.europa", name: "UEFA Europa League" },
   { code: "uefa.europa.conf", name: "UEFA Europa Conference League" },
   { code: "ksa.1", name: "Saudi Pro League" },
-  { code: "fifa.world", name: "FIFA World Cup" }
+  { code: "fifa.world", name: "FIFA World Cup" },
+  { code: "uefa.champions_qual", name: "UEFA Champions League Qualifying" },
+  { code: "uefa.europa_qual", name: "UEFA Europa League Qualifying" },
+  { code: "uefa.europa.conf_qual", name: "UEFA Conference League Qualifying" },
 ];
 
 function formatDate(date) {
@@ -177,7 +184,7 @@ function formatDate(date) {
 }
 
 function getWeekNumber(date) {
-  const base = new Date("2026-08-01");
+  const base = new Date("2026-07-01");
   const diff = Math.floor((date - base) / (1000 * 60 * 60 * 24));
   return diff >= 0 ? Math.floor(diff / 7) + 1 : 0;
 }
@@ -303,17 +310,18 @@ async function run() {
   const matchById = new Map();
 
   for (const league of leagues) {
-    console.log(`⏳ ${league.name}`);
+    const { start: leagueStart, end: leagueEnd, isFullSeason } = getLeagueWindow(league.name);
+    console.log(`⏳ ${league.name} (${isFullSeason ? "full season" : "incremental"})`);
 
-    let cursor = new Date(seasonStart);
+    let cursor = new Date(leagueStart);
 
-    while (cursor <= seasonEnd) {
+    while (cursor <= leagueEnd) {
       const rangeEnd = addDays(cursor, 6);
 
       const events = await fetchScoreboard(
         league.code,
         cursor,
-        rangeEnd > seasonEnd ? seasonEnd : rangeEnd
+        rangeEnd > leagueEnd ? leagueEnd : rangeEnd
       );
 
       for (const event of events) {
