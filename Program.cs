@@ -8,6 +8,14 @@ using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Render/Linux environments often hit the inotify limit when ASP.NET Core watches
+// appsettings.json for reloads. Disable reload-on-change for config files.
+builder.Configuration.Sources.Clear();
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
+builder.Configuration.AddEnvironmentVariables();
+builder.Configuration.AddCommandLine(args);
+
 /* 🔐 ENV (.env) YÜKLEME */
 Env.Load();
 
