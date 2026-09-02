@@ -49,6 +49,15 @@ const existingLeagueNames = new Set(
   db.prepare(`SELECT DISTINCT League FROM Matches`).all().map(r => r.League)
 );
 
+const alwaysFullSeasonLeagueNames = new Set([
+  "UEFA Champions League",
+  "UEFA Europa League",
+  "UEFA Europa Conference League",
+  "UEFA Champions League Qualifying",
+  "UEFA Europa League Qualifying",
+  "UEFA Conference League Qualifying"
+]);
+
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
@@ -59,7 +68,8 @@ const today = new Date();
 today.setHours(0, 0, 0, 0);
 
 function getLeagueWindow(leagueName) {
-  const isNewLeague = !existingLeagueNames.has(leagueName);
+  const isAlwaysFullSeason = alwaysFullSeasonLeagueNames.has(leagueName);
+  const isNewLeague = isAlwaysFullSeason || !existingLeagueNames.has(leagueName);
 
   return {
     start: isNewLeague ? new Date("2026-07-01") : addDays(today, -7),
@@ -94,6 +104,8 @@ WHERE Season = @Season
   AND Id != @Id
 `);
 
+const findById = db.prepare(`SELECT Id FROM Matches WHERE Id = ?`);
+
 const findStaleTbdFixtures = db.prepare(`
 SELECT Id FROM Matches
 WHERE Season = @Season
@@ -108,6 +120,10 @@ WHERE Season = @Season
 const deleteById = db.prepare(`DELETE FROM Matches WHERE Id = ?`);
 
 function upsertMatch(match) {
+  if (alwaysFullSeasonLeagueNames.has(match.League) && findById.get(match.Id)) {
+    return;
+  }
+
   for (const stale of findStaleTbdFixtures.all(match)) {
     deleteById.run(stale.Id);
   }
@@ -310,7 +326,11 @@ async function run() {
   const matchById = new Map();
 
   for (const league of leagues) {
-    const { start: leagueStart, end: leagueEnd, isFullSeason } = getLeagueWindow(league.name);
+    const {
+      start: leagueStart,
+      end: leagueEnd,
+      isFullSeason
+    } = getLeagueWindow(league.name);
     console.log(`⏳ ${league.name} (${isFullSeason ? "full season" : "incremental"})`);
 
     let cursor = new Date(leagueStart);
