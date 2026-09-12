@@ -104,8 +104,6 @@ WHERE Season = @Season
   AND Id != @Id
 `);
 
-const findById = db.prepare(`SELECT Id FROM Matches WHERE Id = ?`);
-
 const findStaleTbdFixtures = db.prepare(`
 SELECT Id FROM Matches
 WHERE Season = @Season
@@ -120,10 +118,6 @@ WHERE Season = @Season
 const deleteById = db.prepare(`DELETE FROM Matches WHERE Id = ?`);
 
 function upsertMatch(match) {
-  if (alwaysFullSeasonLeagueNames.has(match.League) && findById.get(match.Id)) {
-    return;
-  }
-
   for (const stale of findStaleTbdFixtures.all(match)) {
     deleteById.run(stale.Id);
   }
