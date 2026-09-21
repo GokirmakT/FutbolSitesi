@@ -199,8 +199,8 @@ function getWeekNumber(date) {
   return diff >= 0 ? Math.floor(diff / 7) + 1 : 0;
 }
 
-async function fetchScoreboard(leagueCode, start, end) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/scoreboard?dates=${formatDate(start)}-${formatDate(end)}`;
+async function fetchScoreboard(leagueCode, date) {
+  const url = `https://site.web.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/scoreboard?dates=${formatDate(date)}`;
   const { data } = await axios.get(url);
   return data.events || [];
 }
@@ -330,20 +330,14 @@ async function run() {
     let cursor = new Date(leagueStart);
 
     while (cursor <= leagueEnd) {
-      const rangeEnd = addDays(cursor, 6);
-
-      const events = await fetchScoreboard(
-        league.code,
-        cursor,
-        rangeEnd > leagueEnd ? leagueEnd : rangeEnd
-      );
+      const events = await fetchScoreboard(league.code, cursor);
 
       for (const event of events) {
         const match = parseMatch(event, league.name);
         if (match) matchById.set(match.Id, match);
       }
 
-      cursor = addDays(rangeEnd, 1);
+      cursor = addDays(cursor, 1);
       await new Promise(r => setTimeout(r, 250));
     }
   }
