@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: '0 9 * * *' # her gün 12:00 Türkiye saati (09:00 UTC)
+    - cron: '0 */6 * * *' # her 6 saatte bir: 00:00, 06:00, 12:00, 18:00 UTC
   workflow_dispatch:
 
 jobs:
