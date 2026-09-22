@@ -49,15 +49,6 @@ const existingLeagueNames = new Set(
   db.prepare(`SELECT DISTINCT League FROM Matches`).all().map(r => r.League)
 );
 
-const alwaysFullSeasonLeagueNames = new Set([
-  "UEFA Champions League",
-  "UEFA Europa League",
-  "UEFA Europa Conference League",
-  "UEFA Champions League Qualifying",
-  "UEFA Europa League Qualifying",
-  "UEFA Conference League Qualifying"
-]);
-
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
@@ -68,8 +59,7 @@ const today = new Date();
 today.setHours(0, 0, 0, 0);
 
 function getLeagueWindow(leagueName) {
-  const isAlwaysFullSeason = alwaysFullSeasonLeagueNames.has(leagueName);
-  const isNewLeague = isAlwaysFullSeason || !existingLeagueNames.has(leagueName);
+  const isNewLeague = !existingLeagueNames.has(leagueName);
 
   return {
     start: isNewLeague ? new Date("2026-07-01") : addDays(today, -7),
@@ -184,9 +174,9 @@ const leagues = [
   { code: "uefa.europa.conf", name: "UEFA Europa Conference League" },
   { code: "ksa.1", name: "Saudi Pro League" },
   { code: "fifa.world", name: "FIFA World Cup" },
-  { code: "uefa.champions_qual", name: "UEFA Champions League Qualifying" },
-  { code: "uefa.europa_qual", name: "UEFA Europa League Qualifying" },
-  { code: "uefa.europa.conf_qual", name: "UEFA Conference League Qualifying" },
+  //{ code: "uefa.champions_qual", name: "UEFA Champions League Qualifying" },
+  //{ code: "uefa.europa_qual", name: "UEFA Europa League Qualifying" },
+  //{ code: "uefa.europa.conf_qual", name: "UEFA Conference League Qualifying" },
 ];
 
 function formatDate(date) {
