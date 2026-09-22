@@ -174,6 +174,7 @@ const leagues = [
   { code: "uefa.europa.conf", name: "UEFA Europa Conference League" },
   { code: "ksa.1", name: "Saudi Pro League" },
   { code: "fifa.world", name: "FIFA World Cup" },
+  { code: "uefa.nations", name: "UEFA Nations League" },
   //{ code: "uefa.champions_qual", name: "UEFA Champions League Qualifying" },
   //{ code: "uefa.europa_qual", name: "UEFA Europa League Qualifying" },
   //{ code: "uefa.europa.conf_qual", name: "UEFA Conference League Qualifying" },
