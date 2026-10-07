@@ -4,3 +4,28 @@ GET {{FutbolSitesi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{FutbolSitesi_HostAddress}}/api/matches/options
+Accept: application/json
+
+###
+
+GET {{FutbolSitesi_HostAddress}}/api/matches/fixtures?season=2025-2026&page=1&pageSize=50
+Accept: application/json
+
+###
+
+GET {{FutbolSitesi_HostAddress}}/api/matches/team/Galatasaray?season=2025-2026&page=1&pageSize=50
+Accept: application/json
+
+###
+
+GET {{FutbolSitesi_HostAddress}}/api/matches/analysis?season=2025-2026&league=Super%20Lig&page=1&pageSize=50
+Accept: application/json
+
+###
+
+GET {{FutbolSitesi_HostAddress}}/api/matches/123
+Accept: application/json
+
+###
