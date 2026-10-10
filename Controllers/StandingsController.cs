@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FutbolSitesi.Models;
 using FutbolSitesi.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Linq;
@@ -74,6 +75,7 @@ namespace FutbolSitesi.Controllers
 
         // POST /api/standings
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateStanding([FromBody] Standing standing)
         {
             _db.Standings.Add(standing);
@@ -83,6 +85,7 @@ namespace FutbolSitesi.Controllers
 
         // PUT /api/standings/{id}
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateStanding(int id, [FromBody] Standing standing)
         {
             var existingStanding = await _db.Standings.FindAsync(id);
@@ -106,6 +109,7 @@ namespace FutbolSitesi.Controllers
 
         // DELETE /api/standings/{id}
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteStanding(int id)
         {
             var standing = await _db.Standings.FindAsync(id);
@@ -117,4 +121,3 @@ namespace FutbolSitesi.Controllers
         }
     }
 }
-

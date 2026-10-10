@@ -13,6 +13,7 @@ namespace FutbolSitesi.Services
     {
         private readonly string _secret;
         private readonly int _expiresMinutes;
+        private readonly int? _adminUserId;
 
         public JwtTokenService(IConfiguration configuration)
         {
@@ -25,6 +26,16 @@ namespace FutbolSitesi.Services
             if (!int.TryParse(configuration["Jwt:ExpiresMinutes"], out _expiresMinutes))
             {
                 _expiresMinutes = 60; // varsayılan: 60 dakika
+            }
+
+            var adminUserId = Environment.GetEnvironmentVariable("ADMIN_USER_ID")
+                ?? configuration["Admin:UserId"];
+            if (!string.IsNullOrWhiteSpace(adminUserId))
+            {
+                if (!int.TryParse(adminUserId, out var parsedAdminUserId) || parsedAdminUserId < 1)
+                    throw new InvalidOperationException("ADMIN_USER_ID must be a positive user ID.");
+
+                _adminUserId = parsedAdminUserId;
             }
         }
 
@@ -41,6 +52,9 @@ namespace FutbolSitesi.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
             };
 
+            if (_adminUserId == user.Id)
+                claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_expiresMinutes),
@@ -51,4 +65,3 @@ namespace FutbolSitesi.Services
         }
     }
 }
-

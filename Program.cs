@@ -77,7 +77,11 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireAuthenticatedUser().RequireRole("Admin"));
+});
 
 builder.Services.AddScoped<JwtTokenService>();
 
